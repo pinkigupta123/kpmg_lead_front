@@ -1,14 +1,15 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
-// We can define the default local URL.
-// When testing on physical devices, replace this with your host's local IP address (e.g., 'http://192.168.1.X:8000/api')
-// For Android emulator, 'http://10.0.2.2:8000/api' works by default.
+// Production: https://kpmgbackend-production-8d42.up.railway.app/api
+// Android Emulator: http://10.0.2.2:8000/api
+// Physical Phone (same WiFi): http://192.168.1.33:8000/api
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8000/api';
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  // 30s timeout — Railway free tier can take 20-30s on cold start
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

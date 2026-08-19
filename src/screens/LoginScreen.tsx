@@ -42,8 +42,10 @@ export default function LoginScreen() {
     } catch (error: any) {
       if (error.response?.data?.message) {
         setErrorMsg(error.response.data.message);
+      } else if (error.code === 'ECONNABORTED') {
+        setErrorMsg('Server is waking up, please try again in a moment.');
       } else {
-        setErrorMsg('Network error. Please try again.');
+        setErrorMsg('Network error. Please check your connection and try again.');
       }
     } finally {
       setLoading(false);
