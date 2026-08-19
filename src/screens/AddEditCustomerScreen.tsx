@@ -71,7 +71,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
     if (isEditMode) {
       const getCustomerData = async () => {
         try {
-          const response = await api.get(`/customers/${customerId}`);
+          const response = await api.get(`/lead/customers/${customerId}`);
           const data: Customer = response.data;
           
           // Populate fields
@@ -116,11 +116,11 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
       }
 
       if (isEditMode) {
-        await api.put(`/customers/${customerId}`, data);
+        await api.put(`/lead/customers/${customerId}`, data);
         Alert.alert('Success', 'Customer lead updated successfully.');
         navigation.goBack();
       } else {
-        const response = await api.post('/customers', data);
+        const response = await api.post('/lead/customers', data);
         
         // Check if duplicate existed and backend returned existing record
         if (response.data.duplicate) {

@@ -50,7 +50,7 @@ export default function AddEditExecutiveScreen({ route, navigation }: Props) {
     if (isEditMode) {
       const getExecutiveData = async () => {
         try {
-          const response = await api.get(`/executives/${executiveId}`);
+          const response = await api.get(`/lead/executives/${executiveId}`);
           const data: User = response.data;
           
           reset({
@@ -83,11 +83,11 @@ export default function AddEditExecutiveScreen({ route, navigation }: Props) {
       };
 
       if (isEditMode) {
-        await api.put(`/executives/${executiveId}`, payload);
+        await api.put(`/lead/executives/${executiveId}`, payload);
         Alert.alert('Success', 'Executive details updated successfully.');
         navigation.goBack();
       } else {
-        const response = await api.post('/executives', payload);
+        const response = await api.post('/lead/executives', payload);
         const { employee_id, username, password } = response.data;
         
         setCreatedCredentials({

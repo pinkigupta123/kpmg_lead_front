@@ -39,7 +39,7 @@ export default function DashboardScreen({ navigation }: Props) {
 
   const fetchStats = useCallback(async () => {
     try {
-      const r = await api.get('/dashboard-stats');
+      const r = await api.get('/lead/dashboard-stats');
       setStats(r.data);
     } catch (e) { console.log('Dashboard err:', e); }
     finally { setLoading(false); setRefreshing(false); }

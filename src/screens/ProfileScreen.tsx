@@ -24,7 +24,7 @@ export default function ProfileScreen({ navigation }: Props) {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.post('/logout').catch(() => { });
+              await api.post('/lead/logout').catch(() => { });
             } finally {
               clearAuth();
             }

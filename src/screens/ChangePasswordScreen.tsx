@@ -44,7 +44,7 @@ export default function ChangePasswordScreen({ route, navigation }: Props) {
     setErrorMsg(null);
     setSuccessMsg(null);
     try {
-      await api.post('/change-password', {
+      await api.post('/lead/change-password', {
         current_password: data.current_password || '',
         new_password: data.new_password,
         new_password_confirmation: data.new_password_confirmation,

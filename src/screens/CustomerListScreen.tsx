@@ -59,7 +59,7 @@ export default function CustomerListScreen({ navigation }: Props) {
           executive_id: selectedExecutiveId || undefined,
         };
 
-        const response = await api.get('/customers', { params });
+        const response = await api.get('/lead/customers', { params });
         const { data, current_page, last_page } = response.data;
 
         if (isRefresh || pageNum === 1) {
@@ -89,7 +89,7 @@ export default function CustomerListScreen({ navigation }: Props) {
     if (isAdmin) {
       const fetchExecutivesList = async () => {
         try {
-          const response = await api.get('/executives');
+          const response = await api.get('/lead/executives');
           const list = response.data?.data || response.data;
           setExecutives(Array.isArray(list) ? list : []);
         } catch (error) {
@@ -113,7 +113,7 @@ export default function CustomerListScreen({ navigation }: Props) {
 
   const handleExportCSV = () => {
     const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8000/api';
-    const exportUrl = `${baseUrl}/customers/export?token=${token}&search=${search}&status=${selectedStatus !== 'all' ? selectedStatus : ''}&sort=${sortBy === 'latest' ? 'desc' : 'asc'}`;
+    const exportUrl = `${baseUrl}/lead/customers/export?token=${token}&search=${search}&status=${selectedStatus !== 'all' ? selectedStatus : ''}&sort=${sortBy === 'latest' ? 'desc' : 'asc'}`;
     Linking.openURL(exportUrl).catch((err) => console.error('Failed to open export link:', err));
   };
 

@@ -35,7 +35,7 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
 
   const fetchCustomerDetails = useCallback(async () => {
     try {
-      const response = await api.get(`/customers/${customerId}`);
+      const response = await api.get(`/lead/customers/${customerId}`);
       setCustomer(response.data);
     } catch (error) {
       console.log('Failed to fetch customer details:', error);
@@ -66,7 +66,7 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.delete(`/customers/${customerId}`);
+              await api.delete(`/lead/customers/${customerId}`);
               Alert.alert('Success', 'Customer deleted successfully.');
               navigation.goBack();
             } catch (error) {
@@ -122,7 +122,7 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
 
     try {
       // Record action in timeline
-      await api.post(`/customers/${customer.id}/timeline`, {
+      await api.post(`/lead/customers/${customer.id}/timeline`, {
         action: 'WhatsApp Sent',
         remarks: `Sent WhatsApp Template ${selectedTemplate}`,
       });
@@ -163,7 +163,7 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
     try {
       setFollowupVisible(false);
       // Update follow-up status and date
-      await api.post(`/customers/${customer.id}/follow-up`, {
+      await api.post(`/lead/customers/${customer.id}/follow-up`, {
         followup_date: nextFollowupDate,
         remarks: followupRemarks || 'Scheduled next follow-up',
         status: followupStatus,

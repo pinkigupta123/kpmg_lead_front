@@ -33,7 +33,7 @@ export default function LoginScreen() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const response = await api.post('/login', {
+      const response = await api.post('/lead/login', {
         mobile: data.mobile,
         password: data.password,
       });

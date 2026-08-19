@@ -21,7 +21,7 @@ export default function ExecutiveListScreen({ navigation }: Props) {
   const fetchExecutives = useCallback(async () => {
     try {
       const params = search ? { search } : {};
-      const response = await api.get('/executives', { params });
+      const response = await api.get('/lead/executives', { params });
       const list = response.data?.data || response.data;
       setExecutives(Array.isArray(list) ? list : []);
     } catch (error) {
@@ -55,7 +55,7 @@ export default function ExecutiveListScreen({ navigation }: Props) {
           text: actionLabel,
           onPress: async () => {
             try {
-              await api.put(`/executives/${exec.id}`, {
+              await api.put(`/lead/executives/${exec.id}`, {
                 ...exec,
                 status: newStatus,
               });
@@ -82,7 +82,7 @@ export default function ExecutiveListScreen({ navigation }: Props) {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.delete(`/executives/${id}`);
+              await api.delete(`/lead/executives/${id}`);
               Alert.alert('Success', 'Executive deleted successfully.');
               fetchExecutives();
             } catch (error) {
@@ -105,7 +105,7 @@ export default function ExecutiveListScreen({ navigation }: Props) {
           text: 'Reset',
           onPress: async () => {
             try {
-              const response = await api.post('/executives/reset-password', {
+              const response = await api.post('/lead/executives/reset-password', {
                 id: exec.id,
               });
               const { employee_id, username, password } = response.data;
