@@ -11,8 +11,15 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://kpmgbackend-production-8d42.up.railway.app/api"
       }
     },
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://kpmgbackend-production-8d42.up.railway.app/api"
+      }
+    }
   }
 }

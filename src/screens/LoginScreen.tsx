@@ -45,6 +45,7 @@ export default function LoginScreen() {
       } else if (error.code === 'ECONNABORTED') {
         setErrorMsg('Server is waking up, please try again in a moment.');
       } else {
+        console.log('Login network error:', error.code, error.message);
         setErrorMsg('Network error. Please check your connection and try again.');
       }
     } finally {
