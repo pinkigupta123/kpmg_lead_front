@@ -9,7 +9,7 @@ import api from '../services/api';
 import { Customer, CustomerStatus } from '../types';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import CompleteFollowupDialog, { CompleteTarget } from '../components/CompleteFollowupDialog';
-import { followupLabel } from '../utils/followup';
+import { followupLabel, localDateString } from '../utils/followup';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CustomerDetail'>;
@@ -68,10 +68,11 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
 
   // WhatsApp template templates generator
   const getTemplateText = (templateId: number, cust: Customer) => {
-    const productName = cust.interested_product || 'laptop service';
+    const productName = cust.interested_product || 'Laptop Service';
     switch (templateId) {
       case 1:
-        return `Hello ${cust.name},\n\nThank you for visiting our store. We have registered your enquiry regarding ${productName}.\n\nPlease feel free to contact us if you have any questions.\n\nThank you.`;
+        // Template 1 = the new-lead welcome message
+        return `Hello ${cust.name},\n\nThank you for visiting KPMG Laptop Sales & Services! 🎉\n\nWe have successfully registered your enquiry regarding *${productName}*.\n\nOur team will reach out to you shortly.\n\nFor any queries, feel free to contact us.\n\nThank you for choosing KPMG! 🙏`;
       case 2:
         return `Hello ${cust.name},\n\nWe are following up regarding your enquiry.\n\nPlease let us know if you're interested.\n\nThank you.`;
       case 3:
@@ -129,7 +130,7 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
     // Reschedule starts from the current date; a new follow-up defaults to tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateString = customer?.followup_date ? String(customer.followup_date).slice(0, 10) : tomorrow.toISOString().split('T')[0];
+    const dateString = customer?.followup_date ? String(customer.followup_date).slice(0, 10) : localDateString(tomorrow);
     setNextFollowupDate(dateString);
     setFollowupRemarks('');
     setFollowupError('');
@@ -143,6 +144,10 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!nextFollowupDate.match(dateRegex)) {
       setFollowupError('Please enter follow-up date in YYYY-MM-DD format');
+      return;
+    }
+    if (nextFollowupDate < localDateString(new Date())) {
+      setFollowupError('Follow-up date cannot be in the past');
       return;
     }
 
@@ -345,7 +350,7 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
           <Card.Title title="Follow-ups" titleStyle={styles.cardTitle} />
           <Card.Content>
             {customer.followups && customer.followups.length > 0 ? (
-              customer.followups.map((f) => {
+              [...customer.followups].sort((a, b) => Number(b.status === 'pending') - Number(a.status === 'pending') || b.id - a.id).slice(0, 2).map((f) => {
                 const label = followupLabel(f);
                 return (
                   <View key={f.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#F1F5F9' }}>
@@ -367,7 +372,7 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
                         mode="outlined"
                         compact
                         textColor="#1E8E5A"
-                        onPress={() => setCompleteTarget({ id: f.id, scheduled_for: f.scheduled_for, customerName: customer.name })}
+                        onPress={() => setCompleteTarget({ id: f.id, scheduled_for: f.scheduled_for, customerName: customer.name, status: customer.status })}
                       >
                         Mark done
                       </Button>
@@ -376,7 +381,7 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
                 );
               })
             ) : (
-              <Text style={{ color: theme.colors.outline }}>No follow-ups scheduled yet.</Text>
+              <Text style={{ color: theme.colors.outline }}>No follow-up scheduled yet. Use Schedule to add one.</Text>
             )}
           </Card.Content>
         </Card>

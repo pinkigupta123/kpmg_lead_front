@@ -92,7 +92,7 @@ export default function NotificationBell({ tint = '#101820' }: { tint?: string }
                       icon="check"
                       iconColor="#1E8E5A"
                       size={20}
-                      onPress={() => { setOpen(false); setComplete({ id: f.id, scheduled_for: f.scheduled_for, customerName: f.customer?.name }); }}
+                      onPress={() => { setOpen(false); setComplete({ id: f.id, scheduled_for: f.scheduled_for, customerName: f.customer?.name, status: f.customer?.status }); }}
                     />
                   </TouchableOpacity>
                 );

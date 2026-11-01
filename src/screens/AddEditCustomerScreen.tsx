@@ -122,7 +122,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
         Alert.alert('Success', 'Customer lead updated successfully.');
         navigation.goBack();
       } else {
-        const response = await api.post('/lead/customers', data);
+        const response = await api.post('/lead/customers', { ...data, status: 'new' });
         
         // Check if duplicate existed and backend returned existing record
         if (response.data.duplicate) {
@@ -453,16 +453,19 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
 
           {/* Status Selection (only visible, or defaults to new) */}
           <Text style={styles.statusLabel}>Lead Status</Text>
+          {!isEditMode && (
+            <Text style={{ color: '#5B6B7A', fontSize: 12, marginBottom: 6 }}>New leads always start as New.</Text>
+          )}
           <Controller
             control={control}
             name="status"
             render={({ field: { value } }) => (
               <View style={styles.statusGroup}>
-                {STATUS_OPTIONS.map((status) => (
+                {STATUS_OPTIONS.filter((status) => isEditMode || status === 'new').map((status) => (
                   <Chip
                     key={status}
                     selected={value === status}
-                    onPress={() => setValue('status', status)}
+                    onPress={() => { if (isEditMode) setValue('status', status); }}
                     style={styles.statusChip}
                   >
                     {status.toUpperCase()}

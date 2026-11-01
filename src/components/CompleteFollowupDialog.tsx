@@ -8,9 +8,11 @@ export interface CompleteTarget {
   id: number;
   scheduled_for: string;
   customerName?: string;
+  /** the lead's current status, pre-selected in the dialog */
+  status?: string;
 }
 
-const STATUS_OPTIONS = ['contacted', 'follow-up', 'interested', 'purchased', 'closed'];
+const STATUS_OPTIONS = ['new', 'contacted', 'follow-up', 'interested', 'purchased', 'closed'];
 const NEXT_OPTIONS: { label: string; days: number | null }[] = [
   { label: 'No next', days: null },
   { label: 'Tomorrow', days: 1 },
@@ -28,7 +30,7 @@ export default function CompleteFollowupDialog({ target, onClose, onDone }: { ta
   useEffect(() => {
     if (target) {
       setOutcome('');
-      setStatus(null);
+      setStatus(target.status ?? null); // start from the lead's current status
       setNextDays(null);
     }
   }, [target]);
@@ -39,7 +41,7 @@ export default function CompleteFollowupDialog({ target, onClose, onDone }: { ta
     try {
       await api.post(`/lead/followups/${target.id}/complete`, {
         outcome: outcome.trim() || undefined,
-        status: status || undefined,
+        status: status && status !== target.status ? status : undefined, // only send a real change
         next_followup_date: nextDays ? dateInDays(nextDays) : undefined,
       });
       onDone();
@@ -69,10 +71,10 @@ export default function CompleteFollowupDialog({ target, onClose, onDone }: { ta
             placeholder="e.g. Called, customer will visit on Saturday"
           />
 
-          <Text style={styles.label}>Update lead status (optional)</Text>
+          <Text style={styles.label}>Lead status</Text>
           <View style={styles.chips}>
             {STATUS_OPTIONS.map((s) => (
-              <Chip key={s} selected={status === s} showSelectedOverlay onPress={() => setStatus(status === s ? null : s)} style={styles.chip}>
+              <Chip key={s} selected={status === s} showSelectedOverlay onPress={() => setStatus(s)} style={styles.chip}>
                 {s}
               </Chip>
             ))}

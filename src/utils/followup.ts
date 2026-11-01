@@ -20,6 +20,11 @@ export function followupLabel(f: Followup): { text: string; color: string } {
   }
 }
 
+/** YYYY-MM-DD of a Date in LOCAL time (toISOString would use UTC and can be a day off). */
+export function localDateString(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 /** YYYY-MM-DD for today + n days (local time). */
 export function dateInDays(n: number): string {
   const d = new Date();
