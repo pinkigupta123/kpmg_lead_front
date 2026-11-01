@@ -13,12 +13,12 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://kpmgbackend-production-8d42.up.railway.app/api"
+        "EXPO_PUBLIC_API_URL": "http://103.218.127.27:8080/api"
       }
     },
     "production": {
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://kpmgbackend-production-8d42.up.railway.app/api"
+        "EXPO_PUBLIC_API_URL": "http://103.218.127.27:8080/api"
       }
     }
   }
