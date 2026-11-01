@@ -152,7 +152,7 @@ export default function ExecutiveListScreen({ navigation }: Props) {
 
         <View style={styles.cardContent}>
           {/* Left Side: Initials Avatar + Name & Designation */}
-          <View style={[styles.avatarCircle, { backgroundColor: '#EFF6FF' }]}>
+          <View style={[styles.avatarCircle, { backgroundColor: '#E6F4FB' }]}>
             <Text style={styles.avatarText}>{initials}</Text>
           </View>
 
@@ -161,11 +161,11 @@ export default function ExecutiveListScreen({ navigation }: Props) {
               <Text style={[styles.nameText, { color: theme.colors.onSurface }]}>{item.name}</Text>
               <View style={[
                 styles.statusBadge,
-                { backgroundColor: isActive ? '#EFF6FF' : '#FEF2F2' }
+                { backgroundColor: isActive ? '#E6F4FB' : '#FEF2F2' }
               ]}>
                 <Text style={[
                   styles.statusText,
-                  { color: isActive ? '#1D4ED8' : '#B91C1C' }
+                  { color: isActive ? '#00638F' : '#B91C1C' }
                 ]}>
                   {item.status.toUpperCase()}
                 </Text>
@@ -196,16 +196,16 @@ export default function ExecutiveListScreen({ navigation }: Props) {
             style={styles.actionButton}
             onPress={() => navigation.navigate('AddEditExecutive', { executiveId: item.id })}
           >
-            <MaterialCommunityIcons name="pencil-outline" size={16} color="" />
-            <Text style={[styles.actionButtonText, { color: '' }]}>Edit</Text>
+            <MaterialCommunityIcons name="pencil-outline" size={16} color="#0086C3" />
+            <Text style={[styles.actionButtonText, { color: '#0086C3' }]}>Edit</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => handleResetPassword(item)}
           >
-            <MaterialCommunityIcons name="lock-reset" size={16} color="" />
-            <Text style={[styles.actionButtonText, { color: '' }]}>Reset Pwd</Text>
+            <MaterialCommunityIcons name="lock-reset" size={16} color="#0086C3" />
+            <Text style={[styles.actionButtonText, { color: '#0086C3' }]}>Reset Pwd</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -247,7 +247,7 @@ export default function ExecutiveListScreen({ navigation }: Props) {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={[styles.header, { backgroundColor: '#03307e' }]}>
+      <View style={[styles.header, { backgroundColor: '#0086C3' }]}>
         <Searchbar
           placeholder="Search staff members..."
           onChangeText={(query) => {
@@ -264,7 +264,7 @@ export default function ExecutiveListScreen({ navigation }: Props) {
 
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="" />
+          <ActivityIndicator size="large" color="#0086C3" />
         </View>
       ) : (
         <FlatList
@@ -273,7 +273,7 @@ export default function ExecutiveListScreen({ navigation }: Props) {
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContainer}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#03307e']} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0086C3']} />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -293,7 +293,7 @@ export default function ExecutiveListScreen({ navigation }: Props) {
               <View style={styles.credentialsBox}>
                 <Text style={styles.credText}>Employee ID: {resetCredentials.employeeId}</Text>
                 <Text style={styles.credText}>Username: {resetCredentials.username}</Text>
-                <Text style={[styles.credText, { fontWeight: 'bold', color: '' }]}>
+                <Text style={[styles.credText, { fontWeight: 'bold', color: '#0086C3' }]}>
                   New Password: {resetCredentials.password}
                 </Text>
               </View>
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   },
   cardAccent: {
     height: 3,
-    backgroundColor: '#03307e',
+    backgroundColor: '#0086C3',
   },
   disabledCard: {
     opacity: 0.65,
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   avatarText: {
-    color: '',
+    color: '#0086C3',
     fontWeight: '700',
     fontSize: 15,
   },

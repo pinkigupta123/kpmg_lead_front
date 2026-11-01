@@ -84,7 +84,7 @@ export default function ProfileScreen({ navigation }: Props) {
               <Text style={[styles.settingLabel, { color: theme.colors.onSurface }]}>Dark Mode</Text>
               <Text style={[styles.settingDesc, { color: theme.colors.onSurfaceVariant }]}>Toggle light / dark theme</Text>
             </View>
-            <Switch value={isDarkMode} onValueChange={toggleDarkMode} color="#1A56DB" />
+            <Switch value={isDarkMode} onValueChange={toggleDarkMode} color="#0086C3" />
           </View>
 
           {/* Change password — super_admin only */}
@@ -95,8 +95,8 @@ export default function ProfileScreen({ navigation }: Props) {
                 style={styles.settingRow}
                 onPress={() => navigation.navigate('ForceChangePassword', { forceChange: false })}
               >
-                <View style={[styles.settingIcon, { backgroundColor: '#EFF6FF' }]}>
-                  <MaterialCommunityIcons name="lock-reset" size={20} color="#1A56DB" />
+                <View style={[styles.settingIcon, { backgroundColor: '#E6F4FB' }]}>
+                  <MaterialCommunityIcons name="lock-reset" size={20} color="#0086C3" />
                 </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={[styles.settingLabel, { color: theme.colors.onSurface }]}>Change Password</Text>
@@ -137,7 +137,7 @@ function InfoRow({
 const styles = StyleSheet.create({
   /* Hero */
   hero: {
-    backgroundColor: '#03307e',
+    backgroundColor: '#0086C3',
     alignItems: 'center',
     paddingTop: 32,
     paddingBottom: 36,

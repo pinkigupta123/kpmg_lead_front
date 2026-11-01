@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
   modalCustomer: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1A56DB',
+    color: '#0086C3',
     marginBottom: 4,
     textAlign: 'center',
   },

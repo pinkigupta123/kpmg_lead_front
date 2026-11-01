@@ -22,8 +22,8 @@ const EXEC_STATS = (s: DashboardStats | null) => [
 ];
 
 const STATUS_PILL: Record<string, { bg: string; tc: string }> = {
-  new: { bg: '#EFF6FF', tc: '#1E40AF' },
-  contacted: { bg: '#F0F9FF', tc: '#075985' },
+  new: { bg: '#E6F4FB', tc: '#00638F' },
+  contacted: { bg: '#E6F4FB', tc: '#00638F' },
   'follow-up': { bg: '#FFFBEB', tc: '#92400E' },
   interested: { bg: '#F5F3FF', tc: '#5B21B6' },
   purchased: { bg: '#F0FDF4', tc: '#166534' },
@@ -54,14 +54,14 @@ export default function DashboardScreen({ navigation }: Props) {
 
   if (loading) return (
     <View style={[styles.centered, { backgroundColor: theme.colors.background }]}>
-      <ActivityIndicator size="large" color="" />
+      <ActivityIndicator size="large" color="#0086C3" />
     </View>
   );
 
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: theme.colors.background }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#03307e']} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0086C3']} />}
       showsVerticalScrollIndicator={false}
     >
       {/* ── Header ── */}
@@ -84,7 +84,7 @@ export default function DashboardScreen({ navigation }: Props) {
         <View style={styles.statsRow}>
           {statList.map((s) => (
             <View key={s.label} style={[styles.statCard, { backgroundColor: theme.colors.surface }]}>
-              <MaterialCommunityIcons name={s.icon as any} size={22} color="" style={{ marginBottom: 8 }} />
+              <MaterialCommunityIcons name={s.icon as any} size={22} color="#0086C3" style={{ marginBottom: 8 }} />
               <Text style={[styles.statNum, { color: theme.colors.onSurface }]}>{s.value}</Text>
               <Text style={[styles.statLabel, { color: theme.colors.onSurfaceVariant }]}>{s.label}</Text>
             </View>
@@ -101,7 +101,7 @@ export default function DashboardScreen({ navigation }: Props) {
                 <Text style={styles.btnPrimaryText}>Add Staff</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.btnOutline} onPress={() => navigation.navigate('MainTabs', { screen: 'Customers' } as any)}>
-                <MaterialCommunityIcons name="account-multiple" size={18} color="" />
+                <MaterialCommunityIcons name="account-multiple" size={18} color="#0086C3" />
                 <Text style={styles.btnOutlineText}>View Leads</Text>
               </TouchableOpacity>
             </>
@@ -145,7 +145,7 @@ function CustomerRow({ customer, theme, onPress }: { customer: Customer; theme: 
   const initials = (customer.name ?? '?').split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase();
   return (
     <TouchableOpacity style={[styles.row, { backgroundColor: theme.colors.surface }]} onPress={onPress} activeOpacity={0.72}>
-      <View style={[styles.rowAvatar, { backgroundColor: '#EFF6FF' }]}>
+      <View style={[styles.rowAvatar, { backgroundColor: '#E6F4FB' }]}>
         <Text style={styles.rowAvatarText}>{initials}</Text>
       </View>
       <View style={{ flex: 1, marginLeft: 12 }}>
@@ -168,12 +168,13 @@ const styles = StyleSheet.create({
   /* Header */
   header: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#03307e',
-    paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24,
+    backgroundColor: '#101820',
+    borderBottomWidth: 3, borderBottomColor: '#0086C3',
+    paddingHorizontal: 20, paddingTop: 20, paddingBottom: 22,
   },
   headerAvatar: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 44, height: 44, borderRadius: 8,
+    backgroundColor: '#0086C3',
     justifyContent: 'center', alignItems: 'center',
   },
   headerAvatarText: { color: '#fff', fontWeight: '700', fontSize: 15 },
@@ -187,39 +188,39 @@ const styles = StyleSheet.create({
   /* Stats */
   statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
   statCard: {
-    borderRadius: 12, padding: 14, minWidth: '47%', flex: 1,
+    borderRadius: 8, padding: 14, minWidth: '47%', flex: 1,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
-    borderWidth: 1, borderColor: '#F1F5F9',
+    borderWidth: 1, borderColor: '#E3E8EE',
   },
-  statNum: { fontSize: 26, fontWeight: '800', color: '#111827', marginBottom: 2 },
+  statNum: { fontSize: 26, fontWeight: '700', color: '#101820', marginBottom: 2 },
   statLabel: { fontSize: 12 },
 
   /* Actions */
   actionsRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
   btnPrimary: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, backgroundColor: '#03307e', borderRadius: 10, paddingVertical: 12,
+    gap: 6, backgroundColor: '#0086C3', borderRadius: 6, paddingVertical: 12,
   },
   btnPrimaryText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   btnOutline: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, borderRadius: 10, paddingVertical: 12,
-    borderWidth: 1.5, borderColor: '#03307e', backgroundColor: '#fff',
+    gap: 6, borderRadius: 6, paddingVertical: 12,
+    borderWidth: 1.5, borderColor: '#0086C3', backgroundColor: '#fff',
   },
-  btnOutlineText: { color: '#03307e', fontWeight: '700', fontSize: 14 },
+  btnOutlineText: { color: '#0086C3', fontWeight: '700', fontSize: 14 },
 
   /* Rows */
   row: {
     flexDirection: 'row', alignItems: 'center',
-    borderRadius: 12, padding: 12, marginBottom: 8,
-    borderWidth: 1, borderColor: '#F1F5F9',
+    borderRadius: 8, padding: 12, marginBottom: 8,
+    borderWidth: 1, borderColor: '#E3E8EE',
   },
-  rowAvatar: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
-  rowAvatarText: { color: '', fontWeight: '700', fontSize: 14 },
+  rowAvatar: { width: 40, height: 40, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  rowAvatarText: { color: '#0086C3', fontWeight: '700', fontSize: 14 },
   rowName: { fontSize: 14, fontWeight: '600' },
   rowMeta: { fontSize: 12, marginTop: 2 },
-  pill: { borderRadius: 5, paddingHorizontal: 7, paddingVertical: 3 },
+  pill: { borderRadius: 4, paddingHorizontal: 7, paddingVertical: 3 },
   pillText: { fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
 
   empty: {

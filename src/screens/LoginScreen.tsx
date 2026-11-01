@@ -111,7 +111,7 @@ export default function LoginScreen() {
                   left={<TextInput.Icon icon="phone-outline" />}
                   outlineStyle={styles.outline}
                   outlineColor="#D1D5DB"
-                  activeOutlineColor="#03307e"
+                  activeOutlineColor="#0086C3"
                 />
                 {errors.mobile && (
                   <HelperText type="error" visible>{errors.mobile.message}</HelperText>
@@ -144,7 +144,7 @@ export default function LoginScreen() {
                   }
                   outlineStyle={styles.outline}
                   outlineColor="#D1D5DB"
-                  activeOutlineColor="#03307e"
+                  activeOutlineColor="#0086C3"
                 />
                 {errors.password && (
                   <HelperText type="error" visible>{errors.password.message}</HelperText>
@@ -161,7 +161,7 @@ export default function LoginScreen() {
             style={styles.btn}
             contentStyle={styles.btnContent}
             labelStyle={styles.btnLabel}
-            buttonColor="#03307e"
+            buttonColor="#0086C3"
           >
             {loading ? 'Signing in…' : 'Sign In'}
           </Button>
@@ -176,7 +176,7 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#F3F4F6' },
+  root: { flex: 1, backgroundColor: '#F4F6F8' },
 
   scroll: { flexGrow: 1, paddingHorizontal: 24, justifyContent: 'center' },
 
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   logoBlock: { alignItems: 'center', marginBottom: 20 },
   logo: { width: 200, height: 68 },
   dividerLine: {
-    width: 40, height: 2, backgroundColor: '#03307e',
+    width: 40, height: 2, backgroundColor: '#0086C3',
     borderRadius: 2, marginTop: 10, marginBottom: 8,
   },
   appName: { fontSize: 18, fontWeight: '700', color: '#111827', letterSpacing: 0.3 },
@@ -193,15 +193,16 @@ const styles = StyleSheet.create({
   /* Card */
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 8,
+    borderTopWidth: 3, borderTopColor: '#0086C3',
     paddingHorizontal: 22,
     paddingTop: 24,
     paddingBottom: 22,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   cardTitle: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 3 },
   cardSub: { fontSize: 13, color: '#6B7280', marginBottom: 18 },
@@ -216,10 +217,10 @@ const styles = StyleSheet.create({
 
   /* Fields */
   fieldWrap: { marginBottom: 10 },
-  outline: { borderRadius: 8 },
+  outline: { borderRadius: 6 },
 
   /* Button */
-  btn: { marginTop: 12, borderRadius: 8 },
+  btn: { marginTop: 12, borderRadius: 6 },
   btnContent: { paddingVertical: 6 },
   btnLabel: { fontSize: 15, fontWeight: '700', letterSpacing: 0.4 },
 

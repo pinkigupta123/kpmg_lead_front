@@ -132,7 +132,7 @@ export default function CustomerListScreen({ navigation }: Props) {
 
   const renderItem = ({ item }: { item: Customer }) => {
     const STATUS_COLORS: Record<string, { bg: string; tc: string }> = {
-      new: { bg: '#DBEAFE', tc: '#1D4ED8' },
+      new: { bg: '#E6F4FB', tc: '#00638F' },
       contacted: { bg: '#E0F2FE', tc: '#0369A1' },
       'follow-up': { bg: '#FEF9C3', tc: '#A16207' },
       interested: { bg: '#F3E8FF', tc: '#7E22CE' },
@@ -194,7 +194,7 @@ export default function CustomerListScreen({ navigation }: Props) {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* ─── Header ─── */}
-      <View style={[styles.header, { backgroundColor: '#03307e' }]}>
+      <View style={[styles.header, { backgroundColor: '#0086C3' }]}>
         <View style={styles.searchRow}>
           <Searchbar
             placeholder="Search leads..."
@@ -305,7 +305,7 @@ export default function CustomerListScreen({ navigation }: Props) {
                 <Text
                   style={[
                     styles.filterPillText,
-                    { color: active ? '#03307e' : '#FFFFFF' },
+                    { color: active ? '#0086C3' : '#FFFFFF' },
                   ]}
                 >
                   {status.label}
@@ -479,6 +479,6 @@ const styles = StyleSheet.create({
   footerLoader: { marginVertical: 16 },
   fab: {
     position: 'absolute', margin: 16, right: 0, bottom: 0,
-    borderRadius: 16, backgroundColor: '#1A56DB',
+    borderRadius: 16, backgroundColor: '#0086C3',
   },
 });
