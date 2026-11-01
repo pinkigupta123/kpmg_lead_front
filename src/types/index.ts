@@ -18,6 +18,31 @@ export interface User {
 
 export type CustomerStatus = 'new' | 'contacted' | 'follow-up' | 'interested' | 'purchased' | 'closed';
 
+export type FollowupState = 'upcoming' | 'due_today' | 'overdue' | 'done' | 'rescheduled' | 'cancelled';
+
+export interface Followup {
+  id: number;
+  customer_id: number;
+  scheduled_for: string;
+  status: 'pending' | 'done' | 'rescheduled' | 'cancelled';
+  state: FollowupState;
+  days_overdue: number;
+  days_late: number;
+  remarks: string | null;
+  outcome: string | null;
+  resolved_at: string | null;
+  resolver?: User;
+  customer?: {
+    id: number;
+    name: string;
+    mobile: string;
+    interested_product: string | null;
+    status: string;
+    executive_id: number;
+    executive: { id: number; name: string; branch: string } | null;
+  };
+}
+
 export interface Customer {
   id: number;
   executive_id: number;
@@ -37,6 +62,7 @@ export interface Customer {
   updated_at: string;
   executive?: User;
   timelines?: CustomerTimeline[];
+  followups?: Followup[];
 }
 
 export interface CustomerTimeline {

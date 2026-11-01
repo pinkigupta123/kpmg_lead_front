@@ -5,6 +5,7 @@ import { useAuthStore } from '../store/authStore';
 import { useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import NotificationBell from '../components/NotificationBell';
 
 // Import Screens
 import LoginScreen from '../screens/LoginScreen';
@@ -69,6 +70,7 @@ function AdminTabNavigator() {
         headerTitleStyle: {
           fontWeight: 'bold',
         },
+        headerRight: () => <NotificationBell tint={theme.colors.onSurface} />,
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
@@ -110,6 +112,7 @@ function ExecutiveTabNavigator() {
         headerTitleStyle: {
           fontWeight: 'bold',
         },
+        headerRight: () => <NotificationBell tint={theme.colors.onSurface} />,
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />

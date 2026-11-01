@@ -8,6 +8,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import api from '../services/api';
 import { Customer, CustomerStatus } from '../types';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import CompleteFollowupDialog, { CompleteTarget } from '../components/CompleteFollowupDialog';
+import { followupLabel } from '../utils/followup';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CustomerDetail'>;
@@ -27,10 +29,14 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
   const [whatsappMessage, setWhatsappMessage] = useState('');
 
   const [followupVisible, setFollowupVisible] = useState(false);
+  const [completeTarget, setCompleteTarget] = useState<CompleteTarget | null>(null);
   const [nextFollowupDate, setNextFollowupDate] = useState('');
   const [followupRemarks, setFollowupRemarks] = useState('');
   const [followupStatus, setFollowupStatus] = useState<CustomerStatus>('follow-up');
   const [followupError, setFollowupError] = useState('');
+  const [updateVisible, setUpdateVisible] = useState(false);
+  const [updateNote, setUpdateNote] = useState('');
+  const [updateStatus, setUpdateStatus] = useState<CustomerStatus | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const fetchCustomerDetails = useCallback(async () => {
@@ -120,13 +126,12 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
   };
 
   const handleOpenFollowupDialog = () => {
-    // Default follow-up date is tomorrow
+    // Reschedule starts from the current date; a new follow-up defaults to tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateString = tomorrow.toISOString().split('T')[0]; // YYYY-MM-DD
+    const dateString = customer?.followup_date ? String(customer.followup_date).slice(0, 10) : tomorrow.toISOString().split('T')[0];
     setNextFollowupDate(dateString);
     setFollowupRemarks('');
-    setFollowupStatus('follow-up');
     setFollowupError('');
     setFollowupVisible(true);
   };
@@ -143,18 +148,38 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
 
     try {
       setFollowupVisible(false);
-      // Update follow-up status and date
+      // Schedule (or reschedule) the next follow-up: a date + an optional plan note
       await api.post(`/lead/customers/${customer.id}/follow-up`, {
         followup_date: nextFollowupDate,
-        remarks: followupRemarks || 'Scheduled next follow-up',
-        status: followupStatus,
+        remarks: followupRemarks.trim() || undefined,
       });
 
-      Alert.alert('Success', 'Follow-up updated successfully.');
+      Alert.alert('Success', 'Follow-up scheduled.');
       fetchCustomerDetails();
     } catch (error) {
       console.log('Follow-up error:', error);
-      Alert.alert('Error', 'Failed to update follow-up.');
+      Alert.alert('Error', 'Failed to schedule follow-up.');
+    }
+  };
+
+  // Log what happened on a call / visit: a note + optional status change (no date involved)
+  const handleSaveUpdate = async () => {
+    if (!customer) return;
+    if (!updateNote.trim()) {
+      Alert.alert('Add a note', 'Write what happened first.');
+      return;
+    }
+    try {
+      setUpdateVisible(false);
+      await api.post(`/lead/customers/${customer.id}/activity`, {
+        note: updateNote.trim(),
+        status: updateStatus || undefined,
+      });
+      Alert.alert('Success', 'Update added.');
+      fetchCustomerDetails();
+    } catch (error) {
+      console.log('Update error:', error);
+      Alert.alert('Error', 'Failed to add update.');
     }
   };
 
@@ -199,16 +224,27 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
             onPress={handleOpenWhatsappDialog}
             style={[styles.actionBtn, { backgroundColor: '#10B981' }]}
             textColor="#FFFFFF"
+            compact
           >
             WhatsApp
+          </Button>
+          <Button
+            mode="outlined"
+            icon="note-edit-outline"
+            onPress={() => { setUpdateNote(''); setUpdateStatus(null); setUpdateVisible(true); }}
+            style={styles.actionBtn}
+            compact
+          >
+            Log Update
           </Button>
           <Button
             mode="outlined"
             icon="calendar-clock"
             onPress={handleOpenFollowupDialog}
             style={styles.actionBtn}
+            compact
           >
-            Follow-up
+            {customer.followups?.some((f) => f.status === 'pending') ? 'Reschedule' : 'Schedule'}
           </Button>
         </View>
 
@@ -304,6 +340,47 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
           </Card>
         )}
 
+        {/* Follow-up history: scheduled vs actually done */}
+        <Card style={styles.detailsCard}>
+          <Card.Title title="Follow-ups" titleStyle={styles.cardTitle} />
+          <Card.Content>
+            {customer.followups && customer.followups.length > 0 ? (
+              customer.followups.map((f) => {
+                const label = followupLabel(f);
+                return (
+                  <View key={f.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#F1F5F9' }}>
+                    <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, backgroundColor: label.color, marginRight: 12 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontWeight: '700', color: theme.colors.onSurface }}>{f.scheduled_for}</Text>
+                      <Text style={{ fontSize: 12, fontWeight: '700', color: label.color }}>{label.text}</Text>
+                      {f.remarks ? <Text style={{ fontSize: 12, color: theme.colors.onSurfaceVariant }}>Plan: {f.remarks}</Text> : null}
+                      {f.outcome ? <Text style={{ fontSize: 12, color: theme.colors.onSurface }}>Outcome: {f.outcome}</Text> : null}
+                      {f.resolved_at ? (
+                        <Text style={{ fontSize: 11, color: theme.colors.outline }}>
+                          {f.status === 'done' ? 'Completed' : f.status === 'rescheduled' ? 'Rescheduled' : 'Closed'} {new Date(f.resolved_at).toLocaleString()}
+                          {f.resolver ? `  ·  ${f.resolver.name}` : ''}
+                        </Text>
+                      ) : null}
+                    </View>
+                    {f.status === 'pending' && (
+                      <Button
+                        mode="outlined"
+                        compact
+                        textColor="#1E8E5A"
+                        onPress={() => setCompleteTarget({ id: f.id, scheduled_for: f.scheduled_for, customerName: customer.name })}
+                      >
+                        Mark done
+                      </Button>
+                    )}
+                  </View>
+                );
+              })
+            ) : (
+              <Text style={{ color: theme.colors.outline }}>No follow-ups scheduled yet.</Text>
+            )}
+          </Card.Content>
+        </Card>
+
         {/* Timeline Section */}
         <Card style={styles.detailsCard}>
           <Card.Title title="Interaction Timeline" titleStyle={styles.cardTitle} />
@@ -367,6 +444,8 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
         </Button>
       </Surface>
 
+      <CompleteFollowupDialog target={completeTarget} onClose={() => setCompleteTarget(null)} onDone={fetchCustomerDetails} />
+
       {/* WhatsApp Modal */}
       <Portal>
         <Dialog visible={whatsappVisible} onDismiss={() => setWhatsappVisible(false)} style={styles.dialog}>
@@ -405,9 +484,12 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
 
         {/* Follow-up Dialog */}
         <Dialog visible={followupVisible} onDismiss={() => setFollowupVisible(false)} style={styles.dialog}>
-          <Dialog.Title>Add / Update Follow-up</Dialog.Title>
+          <Dialog.Title>{customer.followups?.some((f) => f.status === 'pending') ? 'Reschedule follow-up' : 'Schedule follow-up'}</Dialog.Title>
           <Dialog.Content>
             <ScrollView keyboardShouldPersistTaps="handled">
+              <Text style={{ color: '#5B6B7A', fontSize: 12, marginBottom: 8 }}>
+                Pick the date you should contact this customer next. You will be reminded.
+              </Text>
               {followupError ? <HelperText type="error" visible>{followupError}</HelperText> : null}
               
               {(() => {
@@ -453,34 +535,62 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
               })()}
 
               <TextInput
-                label="Remarks"
+                label="Plan / reminder note (optional)"
                 value={followupRemarks}
                 onChangeText={setFollowupRemarks}
                 mode="outlined"
                 multiline
-                numberOfLines={3}
-                placeholder="Details of today's conversation..."
+                numberOfLines={2}
+                placeholder="e.g. Share the quote and ask for a decision"
                 style={styles.dialogInput}
               />
-
-              <Text style={[styles.dialogSub, { marginTop: 8 }]}>Update Lead Status:</Text>
-              <View style={styles.statusChipsContainer}>
-                {(['follow-up', 'interested', 'purchased', 'closed'] as CustomerStatus[]).map((status) => (
-                  <Chip
-                    key={status}
-                    selected={followupStatus === status}
-                    onPress={() => setFollowupStatus(status)}
-                    style={styles.statusChipSelect}
-                  >
-                    {status.toUpperCase()}
-                  </Chip>
-                ))}
-              </View>
             </ScrollView>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setFollowupVisible(false)}>Cancel</Button>
-            <Button mode="contained" onPress={handleSaveFollowup}>Save</Button>
+            <Button mode="contained" onPress={handleSaveFollowup}>Schedule</Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        {/* Log Update Dialog: what happened */}
+        <Dialog visible={updateVisible} onDismiss={() => setUpdateVisible(false)} style={styles.dialog}>
+          <Dialog.Title>Log update</Dialog.Title>
+          <Dialog.Content>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              <Text style={{ color: '#5B6B7A', fontSize: 12, marginBottom: 8 }}>
+                Record what happened. This does not change the follow-up date.
+              </Text>
+              <TextInput
+                label="What happened? *"
+                value={updateNote}
+                onChangeText={setUpdateNote}
+                mode="outlined"
+                multiline
+                numberOfLines={3}
+                placeholder="e.g. Called, customer asked for a discount"
+                style={styles.dialogInput}
+              />
+              <Text style={[styles.dialogSub, { marginTop: 8 }]}>Update lead status (optional):</Text>
+              <View style={styles.statusChipsContainer}>
+                {(['contacted', 'follow-up', 'interested', 'purchased', 'closed'] as CustomerStatus[])
+                  .filter((st) => st !== customer.status)
+                  .map((st) => (
+                    <Chip
+                      key={st}
+                      selected={updateStatus === st}
+                      showSelectedOverlay
+                      onPress={() => setUpdateStatus(updateStatus === st ? null : st)}
+                      style={styles.statusChipSelect}
+                    >
+                      {st.toUpperCase()}
+                    </Chip>
+                  ))}
+              </View>
+            </ScrollView>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setUpdateVisible(false)}>Cancel</Button>
+            <Button mode="contained" onPress={handleSaveUpdate}>Save update</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -537,11 +647,13 @@ const styles = StyleSheet.create({
   },
   quickActions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
     marginBottom: 16,
   },
   actionBtn: {
-    flex: 0.48,
+    flexGrow: 1,
+    flexBasis: '30%',
     borderRadius: 8,
   },
   detailsCard: {

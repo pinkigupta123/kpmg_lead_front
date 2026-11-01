@@ -4,6 +4,7 @@ import { Text, Switch, useTheme, Divider } from 'react-native-paper';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import api from '../services/api';
+import { unregisterPush } from '../services/push';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 type Props = any;
@@ -24,6 +25,7 @@ export default function ProfileScreen({ navigation }: Props) {
           style: 'destructive',
           onPress: async () => {
             try {
+              await unregisterPush(); // before the token is cleared
               await api.post('/lead/logout').catch(() => { });
             } finally {
               clearAuth();

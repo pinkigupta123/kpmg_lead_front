@@ -206,6 +206,12 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
           <Text style={[styles.title, { color: theme.colors.primary }]}>
             {isEditMode ? 'Edit Customer Lead' : 'Add New Customer Lead'}
           </Text>
+          {isEditMode && (
+            <Text style={{ color: '#5B6B7A', fontSize: 12, marginBottom: 12 }}>
+              Customer details, notes and the follow-up date are locked here. You can update the query and status.
+              Use Log Update to add a note and Schedule to change the follow-up date.
+            </Text>
+          )}
 
           <Controller
             control={control}
@@ -398,15 +404,16 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
 
               return (
                 <View style={styles.inputContainer}>
-                  <Pressable onPress={() => setShowDatePicker(true)}>
+                  <Pressable onPress={() => { if (!isEditMode) setShowDatePicker(true); }}>
                     <View pointerEvents="none">
                       <TextInput
                         label="Next Follow-up Date"
                         value={value}
                         mode="outlined"
                         placeholder="Tap to select date"
+                        disabled={isEditMode} // change it with Schedule / Reschedule on the lead screen
                         left={<TextInput.Icon icon="calendar" />}
-                        right={<TextInput.Icon icon="calendar-edit" />}
+                        right={isEditMode ? undefined : <TextInput.Icon icon="calendar-edit" />}
                       />
                     </View>
                   </Pressable>
@@ -438,6 +445,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
                   mode="outlined"
                   multiline
                   numberOfLines={3}
+                  disabled={isEditMode} // add notes with Log Update on the lead screen
                 />
               </View>
             )}
