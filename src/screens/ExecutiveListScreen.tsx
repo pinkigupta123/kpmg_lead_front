@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, FlatList, RefreshControl, Alert, Linking, TouchableOpacity } from 'react-native';
-import { Text, Avatar, Searchbar, useTheme, ActivityIndicator, Portal, Dialog, Divider } from 'react-native-paper';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { View, StyleSheet, FlatList, RefreshControl, Alert, Linking, TouchableOpacity, ScrollView } from 'react-native';
+import { Text, Avatar, Searchbar, Chip, useTheme, ActivityIndicator, Portal, Dialog, Divider } from 'react-native-paper';
 import api from '../services/api';
 import { User } from '../types';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -13,6 +13,19 @@ export default function ExecutiveListScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
+  const [branchFilter, setBranchFilter] = useState<string | null>(null);
+  const [branchNames, setBranchNames] = useState<string[]>([]);
+
+  // branch options = branches table + any branch a staff member belongs to
+  useEffect(() => {
+    api.get('/branches')
+      .then((r) => {
+        let list: any = r.data;
+        while (list && !Array.isArray(list) && list.data) list = list.data;
+        setBranchNames((Array.isArray(list) ? list : []).map((b: any) => b?.name).filter(Boolean));
+      })
+      .catch(() => {});
+  }, []);
 
   // Password reset popup states
   const [resetSuccessVisible, setResetSuccessVisible] = useState(false);
@@ -71,29 +84,16 @@ export default function ExecutiveListScreen({ navigation }: Props) {
     );
   };
 
-  const handleDelete = (id: number, name: string) => {
-    Alert.alert(
-      'Confirm Delete',
-      `Are you sure you want to permanently delete executive ${name}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.delete(`/lead/executives/${id}`);
-              Alert.alert('Success', 'Executive deleted successfully.');
-              fetchExecutives();
-            } catch (error) {
-              console.log('Delete executive error:', error);
-              Alert.alert('Error', 'Failed to delete executive.');
-            }
-          },
-        },
-      ]
-    );
-  };
+  const branchOptions = useMemo(() => {
+    const set = new Set<string>(branchNames);
+    executives.forEach((e) => e.branch && set.add(e.branch));
+    return [...set].sort();
+  }, [branchNames, executives]);
+
+  const visibleExecutives = useMemo(
+    () => executives.filter((e) => !branchFilter || e.branch === branchFilter),
+    [executives, branchFilter],
+  );
 
   const handleResetPassword = (exec: User) => {
     Alert.alert(
@@ -262,13 +262,27 @@ export default function ExecutiveListScreen({ navigation }: Props) {
         />
       </View>
 
+      {/* Branch filter */}
+      {branchOptions.length > 0 && (
+        <View style={{ paddingVertical: 8 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 12, gap: 8 }}>
+            <Chip selected={!branchFilter} showSelectedOverlay onPress={() => setBranchFilter(null)}>All branches</Chip>
+            {branchOptions.map((b) => (
+              <Chip key={b} selected={branchFilter === b} showSelectedOverlay onPress={() => setBranchFilter(branchFilter === b ? null : b)}>
+                {b}
+              </Chip>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       {loading ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#0086C3" />
         </View>
       ) : (
         <FlatList
-          data={executives}
+          data={visibleExecutives}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContainer}

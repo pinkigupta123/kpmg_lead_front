@@ -6,6 +6,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import api from '../services/api';
+import { useAuthStore } from '../store/authStore';
 import { Customer, CustomerStatus } from '../types';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
@@ -41,6 +42,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
   const isEditMode = !!customerId;
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEditMode);
+  const authUser = useAuthStore((st) => st.user);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Success modal state
@@ -126,6 +128,18 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
         if (response.data.duplicate) {
           // customer is wrapped in a Laravel resource: { data: { id, name, ... } }
           const dupCustomer = response.data.customer?.data || response.data.customer;
+          // The backend only lets an executive open their own leads, so don't redirect (it would be a 403).
+          const canOpen = authUser?.role === 'super_admin' || dupCustomer?.executive_id === authUser?.id;
+          if (!canOpen) {
+            Alert.alert(
+              'Mobile Number Already Registered',
+              `This number is already registered as a lead for ${dupCustomer?.name ?? 'another customer'}` +
+                `${dupCustomer?.executive?.name ? ` (handled by ${dupCustomer.executive.name})` : ''}. ` +
+                'Please contact an admin if you need access.'
+            );
+            setLoading(false);
+            return;
+          }
           Alert.alert(
             'Mobile Number Already Registered',
             `Lead matches existing customer: ${dupCustomer?.name}. Redirecting to profile.`,
@@ -201,6 +215,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
               <View style={styles.inputContainer}>
                 <TextInput
                   label="Customer Name *"
+                  disabled={isEditMode} // details are read-only when editing
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -258,6 +273,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
               <View style={styles.inputContainer}>
                 <TextInput
                   label="Email (Optional)"
+                  disabled={isEditMode} // details are read-only when editing
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -281,6 +297,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
               <View style={styles.inputContainer}>
                 <TextInput
                   label="City"
+                  disabled={isEditMode} // details are read-only when editing
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -298,6 +315,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
               <View style={styles.inputContainer}>
                 <TextInput
                   label="Interested Product (e.g. Dell XPS 15)"
+                  disabled={isEditMode} // details are read-only when editing
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -315,6 +333,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   label="Device Brand"
+                  disabled={isEditMode} // details are read-only when editing
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -330,6 +349,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   label="Device Model"
+                  disabled={isEditMode} // details are read-only when editing
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}

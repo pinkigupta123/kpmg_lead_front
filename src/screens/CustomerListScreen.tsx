@@ -37,6 +37,11 @@ export default function CustomerListScreen({ navigation }: Props) {
   const [selectedExecutiveId, setSelectedExecutiveId] = useState<number | undefined>(undefined);
   const [executivesMenuVisible, setExecutivesMenuVisible] = useState(false);
 
+  // Branch filter (admin) — executives list follows the selected branch
+  const [selectedBranch, setSelectedBranch] = useState<string | undefined>(undefined);
+  const [branchNames, setBranchNames] = useState<string[]>([]);
+  const [branchMenuVisible, setBranchMenuVisible] = useState(false);
+
   // Pagination states
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -57,6 +62,7 @@ export default function CustomerListScreen({ navigation }: Props) {
           status: selectedStatus !== 'all' ? selectedStatus : undefined,
           sort: sortBy === 'latest' ? 'desc' : 'asc',
           executive_id: selectedExecutiveId || undefined,
+          branch: selectedBranch || undefined,
         };
 
         const response = await api.get('/lead/customers', { params });
@@ -78,7 +84,7 @@ export default function CustomerListScreen({ navigation }: Props) {
         setLoadingMore(false);
       }
     },
-    [search, selectedStatus, sortBy, selectedExecutiveId]
+    [search, selectedStatus, sortBy, selectedExecutiveId, selectedBranch]
   );
 
   useEffect(() => {
@@ -97,8 +103,26 @@ export default function CustomerListScreen({ navigation }: Props) {
         }
       };
       fetchExecutivesList();
+      api.get('/branches')
+        .then((r) => {
+          let list: any = r.data;
+          while (list && !Array.isArray(list) && list.data) list = list.data;
+          setBranchNames((Array.isArray(list) ? list : []).map((b: any) => b?.name).filter(Boolean));
+        })
+        .catch(() => {});
     }
   }, [isAdmin]);
+
+  const branchOptions = React.useMemo(() => {
+    const set = new Set<string>(branchNames);
+    executives.forEach((e) => e.branch && set.add(e.branch));
+    return [...set].sort();
+  }, [branchNames, executives]);
+
+  const executiveOptions = React.useMemo(
+    () => executives.filter((e) => !selectedBranch || e.branch === selectedBranch),
+    [executives, selectedBranch],
+  );
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -241,6 +265,41 @@ export default function CustomerListScreen({ navigation }: Props) {
           {isAdmin && (
             <>
               <Menu
+                visible={branchMenuVisible}
+                onDismiss={() => setBranchMenuVisible(false)}
+                anchor={
+                  <IconButton
+                    icon="store"
+                    iconColor="#FFFFFF"
+                    onPress={() => setBranchMenuVisible(true)}
+                    style={styles.headerIcon}
+                  />
+                }
+              >
+                <Menu.Item
+                  onPress={() => {
+                    setSelectedBranch(undefined);
+                    setSelectedExecutiveId(undefined);
+                    setBranchMenuVisible(false);
+                  }}
+                  title="All Branches"
+                  leadingIcon={!selectedBranch ? 'check' : undefined}
+                />
+                {branchOptions.map((b) => (
+                  <Menu.Item
+                    key={b}
+                    onPress={() => {
+                      setSelectedBranch(b);
+                      setSelectedExecutiveId(undefined);
+                      setBranchMenuVisible(false);
+                    }}
+                    title={b}
+                    leadingIcon={selectedBranch === b ? 'check' : undefined}
+                  />
+                ))}
+              </Menu>
+
+              <Menu
                 visible={executivesMenuVisible}
                 onDismiss={() => setExecutivesMenuVisible(false)}
                 anchor={
@@ -260,7 +319,7 @@ export default function CustomerListScreen({ navigation }: Props) {
                   title="All Staff"
                   leadingIcon={!selectedExecutiveId ? 'check' : undefined}
                 />
-                {executives.map((exec) => (
+                {executiveOptions.map((exec) => (
                   <Menu.Item
                     key={exec.id}
                     onPress={() => {
@@ -315,6 +374,19 @@ export default function CustomerListScreen({ navigation }: Props) {
           })}
         </ScrollView>
       </View>
+
+      {isAdmin && selectedBranch && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginTop: 8, marginBottom: 4 }}>
+          <Chip
+            icon="store"
+            onClose={() => { setSelectedBranch(undefined); setSelectedExecutiveId(undefined); }}
+            style={{ backgroundColor: theme.colors.secondaryContainer }}
+            textStyle={{ fontSize: 12, color: theme.colors.onSecondaryContainer }}
+          >
+            Branch: {selectedBranch}
+          </Chip>
+        </View>
+      )}
 
       {isAdmin && selectedExecutiveId && (
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginTop: 8, marginBottom: 4 }}>

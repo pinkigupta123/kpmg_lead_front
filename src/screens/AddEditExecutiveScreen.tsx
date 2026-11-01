@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert, Linking } from 'react-native';
-import { TextInput, Button, Text, Surface, HelperText, useTheme, Portal, Dialog } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert, Linking, Pressable } from 'react-native';
+import { TextInput, Button, Text, Surface, HelperText, useTheme, Portal, Dialog, Menu } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
@@ -25,6 +25,19 @@ export default function AddEditExecutiveScreen({ route, navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEditMode);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Branch options come from the branches table (same list as the web app)
+  const [branches, setBranches] = useState<string[]>([]);
+  const [branchMenuVisible, setBranchMenuVisible] = useState(false);
+  useEffect(() => {
+    api.get('/branches')
+      .then((r) => {
+        let list: any = r.data;
+        while (list && !Array.isArray(list) && list.data) list = list.data;
+        setBranches((Array.isArray(list) ? list : []).map((b: any) => b?.name).filter(Boolean));
+      })
+      .catch((e) => console.log('Failed to load branches:', e));
+  }, []);
 
   // Success dialog for new executives
   const [successVisible, setSuccessVisible] = useState(false);
@@ -215,22 +228,47 @@ export default function AddEditExecutiveScreen({ route, navigation }: Props) {
             control={control}
             name="branch"
             rules={{ required: 'Store / Branch is required' }}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View style={styles.inputContainer}>
-                <TextInput
-                  label="Store / Branch *"
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  mode="outlined"
-                  error={!!errors.branch}
-                  left={<TextInput.Icon icon="store" />}
-                />
-                {errors.branch && (
-                  <HelperText type="error" visible>{errors.branch.message}</HelperText>
-                )}
-              </View>
-            )}
+            render={({ field: { onChange, value } }) => {
+              // keep a legacy value selectable if it is no longer in the branch table
+              const options = value && !branches.includes(value) ? [value, ...branches] : branches;
+              return (
+                <View style={styles.inputContainer}>
+                  <Menu
+                    visible={branchMenuVisible}
+                    onDismiss={() => setBranchMenuVisible(false)}
+                    anchor={
+                      <Pressable onPress={() => setBranchMenuVisible(true)}>
+                        <View pointerEvents="none">
+                          <TextInput
+                            label="Store / Branch *"
+                            value={value}
+                            mode="outlined"
+                            editable={false}
+                            error={!!errors.branch}
+                            placeholder="Select branch"
+                            left={<TextInput.Icon icon="store" />}
+                            right={<TextInput.Icon icon="menu-down" />}
+                          />
+                        </View>
+                      </Pressable>
+                    }
+                  >
+                    {options.length === 0 && <Menu.Item title="No branches found" disabled />}
+                    {options.map((b) => (
+                      <Menu.Item
+                        key={b}
+                        title={b}
+                        leadingIcon={value === b ? 'check' : undefined}
+                        onPress={() => { onChange(b); setBranchMenuVisible(false); }}
+                      />
+                    ))}
+                  </Menu>
+                  {errors.branch && (
+                    <HelperText type="error" visible>{errors.branch.message}</HelperText>
+                  )}
+                </View>
+              );
+            }}
           />
 
           <Controller

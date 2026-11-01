@@ -39,7 +39,12 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
       setCustomer(response.data);
     } catch (error) {
       console.log('Failed to fetch customer details:', error);
-      Alert.alert('Error', 'Failed to load customer details.');
+      if ((error as any)?.response?.status === 403) {
+        Alert.alert('No access', "You don't have access to this lead.");
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', 'Failed to load customer details.');
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -53,30 +58,6 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
   const onRefresh = () => {
     setRefreshing(true);
     fetchCustomerDetails();
-  };
-
-  const handleDelete = () => {
-    Alert.alert(
-      'Confirm Delete',
-      'Are you sure you want to permanently delete this customer?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.delete(`/lead/customers/${customerId}`);
-              Alert.alert('Success', 'Customer deleted successfully.');
-              navigation.goBack();
-            } catch (error) {
-              console.log('Delete error:', error);
-              Alert.alert('Error', 'Failed to delete customer.');
-            }
-          },
-        },
-      ]
-    );
   };
 
   // WhatsApp template templates generator
@@ -384,17 +365,6 @@ export default function CustomerDetailScreen({ route, navigation }: Props) {
         >
           Edit Lead
         </Button>
-        {isAdmin && (
-          <Button
-            mode="outlined"
-            icon="delete"
-            style={[styles.footerBtn, { borderColor: theme.colors.error }]}
-            textColor={theme.colors.error}
-            onPress={handleDelete}
-          >
-            Delete Lead
-          </Button>
-        )}
       </Surface>
 
       {/* WhatsApp Modal */}
