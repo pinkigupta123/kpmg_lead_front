@@ -9,6 +9,7 @@ export interface User {
   role: Role;
   branch: string;
   designation: string | null;
+  permissions?: string[];
   status: 'active' | 'inactive';
   is_temp_password: boolean;
   temp_password?: string | null;
@@ -51,6 +52,7 @@ export interface Customer {
   email: string | null;
   city: string | null;
   company: string | null;
+  lead_source: string | null;
   interested_product: string | null;
   device_brand: string | null;
   device_model: string | null;
@@ -83,4 +85,25 @@ export interface DashboardStats {
   pending_followups?: number; // Only for Executive
   recent_customers: Customer[];
   upcoming_followups?: Customer[]; // Only for Executive
+}
+
+export type OptionType = 'lead_source' | 'designation';
+
+export interface LeadOption {
+  id: number;
+  type: OptionType;
+  label: string;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export interface PermissionDef {
+  key: string;
+  label: string;
+}
+
+export interface BulkAddResult {
+  created: number;
+  duplicates: { row: number; mobile: string }[];
+  failed: { row: number; mobile: string | null; error: string }[];
 }

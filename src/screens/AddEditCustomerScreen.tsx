@@ -8,6 +8,8 @@ import { RootStackParamList } from '../navigation/RootNavigator';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { Customer, CustomerStatus } from '../types';
+import SelectField from '../components/SelectField';
+import { useLeadOptions } from '../hooks/useLeadOptions';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddEditCustomer'>;
@@ -18,6 +20,7 @@ interface CustomerForm {
   email: string;
   city: string;
   company: string;
+  lead_source: string;
   interested_product: string;
   device_brand: string;
   device_model: string;
@@ -43,6 +46,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEditMode);
   const authUser = useAuthStore((st) => st.user);
+  const { options: leadOptions } = useLeadOptions();
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Success modal state
@@ -59,6 +63,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
       email: '',
       city: '',
       company: '',
+      lead_source: '',
       interested_product: '',
       device_brand: '',
       device_model: '',
@@ -83,6 +88,7 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
             email: data.email || '',
             city: data.city || '',
             company: data.company || '',
+            lead_source: data.lead_source || '',
             interested_product: data.interested_product || '',
             device_brand: data.device_brand || '',
             device_model: data.device_model || '',
@@ -312,6 +318,29 @@ export default function AddEditCustomerScreen({ route, navigation }: Props) {
                 />
               </View>
             )}
+          />
+
+          <Controller
+            control={control}
+            name="lead_source"
+            render={({ field: { onChange, value } }) => {
+              // keep a value saved earlier selectable even if the admin has since removed it
+              const labels = leadOptions.lead_source.map((o) => o.label);
+              const items = (value && !labels.includes(value) ? [value, ...labels] : labels)
+                .map((l) => ({ value: l, label: l }));
+              return (
+                <View style={styles.inputContainer}>
+                  <SelectField
+                    label="Lead Came From"
+                    icon="source-branch"
+                    items={items}
+                    value={value}
+                    onChange={onChange}
+                    emptyText="No sources yet - ask an admin to add some"
+                  />
+                </View>
+              );
+            }}
           />
 
           <Controller

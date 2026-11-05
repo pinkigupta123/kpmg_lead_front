@@ -6,6 +6,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import api from '../services/api';
 import { User } from '../types';
+import SelectField from '../components/SelectField';
+import { useLeadOptions } from '../hooks/useLeadOptions';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddEditExecutive'>;
 
@@ -15,6 +17,7 @@ interface ExecutiveForm {
   email: string;
   branch: string;
   designation: string;
+  permissions: string[];
   password?: string;
 }
 
@@ -25,6 +28,7 @@ export default function AddEditExecutiveScreen({ route, navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEditMode);
   const [showPassword, setShowPassword] = useState(false);
+  const { options: leadOptions, permissions: permissionCatalog } = useLeadOptions();
 
   // Branch options come from the branches table (same list as the web app)
   const [branches, setBranches] = useState<string[]>([]);
@@ -55,6 +59,7 @@ export default function AddEditExecutiveScreen({ route, navigation }: Props) {
       email: '',
       branch: '',
       designation: '',
+      permissions: [],
       password: '',
     },
   });
@@ -72,6 +77,7 @@ export default function AddEditExecutiveScreen({ route, navigation }: Props) {
             email: data.email || '',
             branch: data.branch,
             designation: data.designation || '',
+            permissions: data.permissions || [],
             password: '',
           });
         } catch (error) {
@@ -274,16 +280,38 @@ export default function AddEditExecutiveScreen({ route, navigation }: Props) {
           <Controller
             control={control}
             name="designation"
-            render={({ field: { onChange, onBlur, value } }) => (
+            render={({ field: { onChange, value } }) => {
+              const labels = leadOptions.designation.map((o) => o.label);
+              const items = (value && !labels.includes(value) ? [value, ...labels] : labels)
+                .map((l) => ({ value: l, label: l }));
+              return (
+                <View style={styles.inputContainer}>
+                  <SelectField
+                    label="Designation (Optional)"
+                    icon="briefcase"
+                    items={items}
+                    value={value}
+                    onChange={onChange}
+                    emptyText="No designations yet - add some in Manage Dropdowns"
+                  />
+                </View>
+              );
+            }}
+          />
+
+          <Controller
+            control={control}
+            name="permissions"
+            render={({ field: { onChange, value } }) => (
               <View style={styles.inputContainer}>
-                <TextInput
-                  label="Designation (Optional)"
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  mode="outlined"
-                  placeholder="e.g. Sales Consultant"
-                  left={<TextInput.Icon icon="briefcase" />}
+                <SelectField
+                  label="Permissions (Optional)"
+                  icon="shield-key"
+                  multiple
+                  items={permissionCatalog.map((p) => ({ value: p.key, label: p.label }))}
+                  values={value}
+                  onChangeMultiple={onChange}
+                  emptyText="No permissions available"
                 />
               </View>
             )}

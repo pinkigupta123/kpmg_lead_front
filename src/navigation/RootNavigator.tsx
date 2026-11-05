@@ -17,6 +17,7 @@ import AddEditCustomerScreen from '../screens/AddEditCustomerScreen';
 import ExecutiveListScreen from '../screens/ExecutiveListScreen';
 import AddEditExecutiveScreen from '../screens/AddEditExecutiveScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import ManageOptionsScreen from '../screens/ManageOptionsScreen';
 
 // Navigation Stack Types
 export type RootStackParamList = {
@@ -26,6 +27,7 @@ export type RootStackParamList = {
   CustomerDetail: { customerId: number };
   AddEditCustomer: { customerId?: number };
   AddEditExecutive: { executiveId?: number };
+  ManageOptions: undefined;
 };
 
 export type TabParamList = {
@@ -173,6 +175,11 @@ export default function RootNavigator() {
             options={({ route }) => ({
               title: route.params?.customerId ? 'Edit Customer' : 'Add Customer',
             })}
+          />
+          <Stack.Screen
+            name="ManageOptions"
+            component={ManageOptionsScreen}
+            options={{ title: 'Manage Dropdowns' }}
           />
           <Stack.Screen
             name="AddEditExecutive"

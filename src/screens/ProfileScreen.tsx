@@ -89,6 +89,23 @@ export default function ProfileScreen({ navigation }: Props) {
             <Switch value={isDarkMode} onValueChange={toggleDarkMode} color="#0086C3" />
           </View>
 
+          {/* Manage dropdowns — super_admin only */}
+          {user?.role === 'super_admin' && (
+            <>
+              <Divider style={styles.divider} />
+              <TouchableOpacity style={styles.settingRow} onPress={() => navigation.navigate('ManageOptions')}>
+                <View style={[styles.settingIcon, { backgroundColor: '#E6F4FB' }]}>
+                  <MaterialCommunityIcons name="format-list-bulleted" size={20} color="#0086C3" />
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={[styles.settingLabel, { color: theme.colors.onSurface }]}>Manage Dropdowns</Text>
+                  <Text style={[styles.settingDesc, { color: theme.colors.onSurfaceVariant }]}>Lead sources, designations</Text>
+                </View>
+                <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.outline} />
+              </TouchableOpacity>
+            </>
+          )}
+
           {/* Change password — super_admin only */}
           {user?.role === 'super_admin' && (
             <>

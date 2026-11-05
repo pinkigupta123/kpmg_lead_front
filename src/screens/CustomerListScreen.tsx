@@ -7,6 +7,7 @@ import { RootStackParamList } from '../navigation/RootNavigator';
 import api from '../services/api';
 import { Customer, CustomerStatus, User } from '../types';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import BulkAddDrawer from '../components/BulkAddDrawer';
 
 type Props = any;
 
@@ -24,6 +25,9 @@ export default function CustomerListScreen({ navigation }: Props) {
   const theme = useTheme();
   const { user, token } = useAuthStore();
   const isAdmin = user?.role === 'super_admin';
+  // Executives need the bulk_add_leads permission granted by an admin
+  const canBulkAdd = !isAdmin && !!user?.permissions?.includes('bulk_add_leads');
+  const [bulkVisible, setBulkVisible] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -435,6 +439,22 @@ export default function CustomerListScreen({ navigation }: Props) {
       )}
 
       {/* FAB to add customer - Sales Executives only */}
+      {canBulkAdd && (
+        <>
+          <FAB
+            icon="account-multiple-plus"
+            size="small"
+            style={[styles.fabBulk, { backgroundColor: theme.colors.primary }]}
+            color="#FFFFFF"
+            onPress={() => setBulkVisible(true)}
+          />
+          <BulkAddDrawer
+            visible={bulkVisible}
+            onClose={() => setBulkVisible(false)}
+            onSaved={() => fetchCustomers(1, true)}
+          />
+        </>
+      )}
       {!isAdmin && (
         <FAB
           icon="plus"
@@ -549,6 +569,9 @@ const styles = StyleSheet.create({
   emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
   emptyText: { marginTop: 12, fontSize: 14 },
   footerLoader: { marginVertical: 16 },
+  fabBulk: {
+    position: 'absolute', right: 16, bottom: 88, borderRadius: 14,
+  },
   fab: {
     position: 'absolute', margin: 16, right: 0, bottom: 0,
     borderRadius: 16, backgroundColor: '#0086C3',
