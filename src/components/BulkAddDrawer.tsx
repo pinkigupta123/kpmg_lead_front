@@ -6,8 +6,8 @@ import { BulkAddResult } from '../types';
 import SelectField from './SelectField';
 import { useLeadOptions } from '../hooks/useLeadOptions';
 
-interface Row { name: string; mobile: string; email: string }
-const emptyRow = (): Row => ({ name: '', mobile: '', email: '' });
+interface Row { name: string; mobile: string; email: string; source: string }
+const emptyRow = (): Row => ({ name: '', mobile: '', email: '', source: '' });
 const MAX_ROWS = 100;
 
 interface Props {
@@ -22,7 +22,6 @@ export default function BulkAddDrawer({ visible, onClose, onSaved }: Props) {
   const theme = useTheme();
   const { options } = useLeadOptions();
   const [rows, setRows] = useState<Row[]>([emptyRow()]);
-  const [leadSource, setLeadSource] = useState('');
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<BulkAddResult | null>(null);
 
@@ -31,7 +30,7 @@ export default function BulkAddDrawer({ visible, onClose, onSaved }: Props) {
   const removeRow = (i: number) => setRows((r) => (r.length === 1 ? [emptyRow()] : r.filter((_, idx) => idx !== i)));
   const addRow = () => setRows((r) => (r.length >= MAX_ROWS ? r : [...r, emptyRow()]));
 
-  const reset = () => { setRows([emptyRow()]); setLeadSource(''); setResult(null); };
+  const reset = () => { setRows([emptyRow()]); setResult(null); };
   const close = () => { reset(); onClose(); };
 
   const submit = async () => {
@@ -50,8 +49,7 @@ export default function BulkAddDrawer({ visible, onClose, onSaved }: Props) {
     setSaving(true);
     try {
       const res = await api.post('/lead/customers/bulk', {
-        customers: filled.map((r) => ({ name: r.name.trim(), mobile: r.mobile.trim(), email: r.email.trim() || null })),
-        lead_source: leadSource || null,
+        customers: filled.map((r) => ({ name: r.name.trim(), mobile: r.mobile.trim(), email: r.email.trim() || null, lead_source: r.source || null })),
       });
       const data: BulkAddResult = res.data;
       setResult(data);
@@ -93,16 +91,6 @@ export default function BulkAddDrawer({ visible, onClose, onSaved }: Props) {
           ) : (
             <>
               <ScrollView style={styles.body} keyboardShouldPersistTaps="handled">
-                <View style={{ marginBottom: 8 }}>
-                  <SelectField
-                    label="Lead Came From (applies to all)"
-                    icon="source-branch"
-                    items={options.lead_source.map((o) => ({ value: o.label, label: o.label }))}
-                    value={leadSource}
-                    onChange={setLeadSource}
-                  />
-                </View>
-
                 {rows.map((row, i) => (
                   <View key={i} style={styles.rowCard}>
                     <View style={styles.rowHead}>
@@ -110,17 +98,17 @@ export default function BulkAddDrawer({ visible, onClose, onSaved }: Props) {
                       <IconButton icon="delete-outline" size={20} onPress={() => removeRow(i)} />
                     </View>
                     <TextInput
-                      label="Mobile Number *"
-                      value={row.mobile}
-                      onChangeText={(t) => update(i, { mobile: t.replace(/[^0-9]/g, '').slice(0, 10) })}
-                      keyboardType="phone-pad"
+                      label="Customer Name"
+                      value={row.name}
+                      onChangeText={(t) => update(i, { name: t })}
                       mode="outlined"
                       dense
                     />
                     <TextInput
-                      label="Customer Name"
-                      value={row.name}
-                      onChangeText={(t) => update(i, { name: t })}
+                      label="Mobile Number *"
+                      value={row.mobile}
+                      onChangeText={(t) => update(i, { mobile: t.replace(/[^0-9]/g, '').slice(0, 10) })}
+                      keyboardType="phone-pad"
                       mode="outlined"
                       dense
                       style={styles.gap}
@@ -135,6 +123,15 @@ export default function BulkAddDrawer({ visible, onClose, onSaved }: Props) {
                       dense
                       style={styles.gap}
                     />
+                    <View style={styles.gap}>
+                      <SelectField
+                        label="Lead Came From"
+                        icon="source-branch"
+                        items={options.lead_source.map((o) => ({ value: o.label, label: o.label }))}
+                        value={row.source}
+                        onChange={(v) => update(i, { source: v })}
+                      />
+                    </View>
                   </View>
                 ))}
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, FlatList, RefreshControl, Linking, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, FlatList, RefreshControl, Linking, ScrollView, Alert, TouchableOpacity, Share } from 'react-native';
 import { Searchbar, Chip, Text, FAB, useTheme, ActivityIndicator, IconButton, Menu } from 'react-native-paper';
 import { useAuthStore } from '../store/authStore';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -23,7 +23,7 @@ const STATUSES: { label: string; value: CustomerStatus | 'all' }[] = [
 
 export default function CustomerListScreen({ navigation }: Props) {
   const theme = useTheme();
-  const { user, token } = useAuthStore();
+  const { user } = useAuthStore();
   const isAdmin = user?.role === 'super_admin';
   // Executives need the bulk_add_leads permission granted by an admin
   const canBulkAdd = !isAdmin && !!user?.permissions?.includes('bulk_add_leads');
@@ -139,10 +139,25 @@ export default function CustomerListScreen({ navigation }: Props) {
     }
   };
 
-  const handleExportCSV = () => {
-    const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8000/api';
-    const exportUrl = `${baseUrl}/lead/customers/export?token=${token}&search=${search}&status=${selectedStatus !== 'all' ? selectedStatus : ''}&sort=${sortBy === 'latest' ? 'desc' : 'asc'}`;
-    Linking.openURL(exportUrl).catch((err) => console.error('Failed to open export link:', err));
+  // Super admin only (enforced by the backend). Fetches the CSV with the login token and opens the share sheet.
+  const handleExportCSV = async () => {
+    if (!isAdmin) return;
+    try {
+      const res = await api.get('/lead/customers/export', {
+        responseType: 'text',
+        params: {
+          search: search || undefined,
+          status: selectedStatus !== 'all' ? selectedStatus : undefined,
+          sort: sortBy === 'latest' ? 'desc' : 'asc',
+          executive_id: selectedExecutiveId,
+          branch: selectedBranch,
+        },
+      });
+      await Share.share({ title: 'Leads export', message: String(res.data) });
+    } catch (err) {
+      console.log('Export failed:', err);
+      Alert.alert('Export failed', 'Could not export the leads. Please try again.');
+    }
   };
 
   const handleWhatsApp = (item: Customer) => {
